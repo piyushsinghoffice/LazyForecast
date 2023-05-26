@@ -6,7 +6,7 @@ import pmdarima as pm
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerTuple
 
-#Disable tensorflow CUDNN warnings
+#Disable tensorflow cuDNN warnings
 import logging, os
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
