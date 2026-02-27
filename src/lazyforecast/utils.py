@@ -80,3 +80,41 @@ def prepare_series(
         y_values = y_values.interpolate(method="linear").bfill().ffill()
 
     return y_values, x_values
+
+
+def infer_forecast_index(
+    original_index: pd.Index,
+    n_periods: int,
+) -> pd.DatetimeIndex | pd.RangeIndex:
+    """Extend an index n_periods into the future.
+
+    If ``original_index`` is a :class:`pd.DatetimeIndex` whose frequency can
+    be inferred, the returned index continues with the same frequency.
+    Otherwise a :class:`pd.RangeIndex` starting after the last integer
+    position is returned (fallback).
+
+    Parameters
+    ----------
+    original_index : the index of the input series
+    n_periods      : number of future steps to generate
+
+    Returns
+    -------
+    pd.DatetimeIndex  — when frequency is successfully inferred
+    pd.RangeIndex     — fallback for non-datetime or ambiguous frequency
+    """
+    start = len(original_index)
+
+    if not isinstance(original_index, pd.DatetimeIndex):
+        return pd.RangeIndex(start, start + n_periods)
+
+    freq = pd.infer_freq(original_index)
+    if freq is None:
+        return pd.RangeIndex(start, start + n_periods)
+
+    # date_range(start=last, periods=n_periods+1)[1:] skips the last observed date
+    return pd.date_range(
+        start=original_index[-1],
+        periods=n_periods + 1,
+        freq=freq,
+    )[1:]
